@@ -92,7 +92,7 @@ class Command(BaseCommand):
                     ),
                     recipe=Recipe.objects.get(
                         id=int(obj_data.get('recipe'))
-                        ),
+                    ),
                 ).save()
 
             elif table == 'tags_recipes':
