@@ -1,3 +1,4 @@
-Завтрак,#4de4e, breakfast
-Обед,#fabb22,dinner
-Ланч,ff6f69,lunch
+name,color,slug
+Завтрак,#4cff33,breakfast
+Обед,#fff833,dinner
+Ланч,#33ceff,lunch
