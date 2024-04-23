@@ -130,3 +130,11 @@ dmypy.json
 
 # .idea
 .idea
+
+# media
+media/
+images/
+
+# Local Docker files
+
+docker-compose.yml
