@@ -1,6 +1,5 @@
 from time import sleep
 
-from django.db.transaction import atomic
 from django.core.management.base import BaseCommand
 
 from foodgram_backend.settings import (
@@ -56,7 +55,6 @@ class Command(BaseCommand):
                     cls=self.tables[table], csv_data=csv_data, table=table,
                 )
 
-    @atomic
     def create_object(self, cls, csv_data, table):
         """Create objects with data from .csv file."""
         if table == 'ingredients':

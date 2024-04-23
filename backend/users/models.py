@@ -35,7 +35,7 @@ class User(AbstractUser):
     password = models.CharField(
         'Пароль',
         max_length=PASSWORD_FIELD_MAX_LENGTH,
-        validators=[validate_password,]
+        validators=[validate_password, ]
     )
     role = models.CharField(
         'Уровень доступа',
@@ -48,7 +48,7 @@ class User(AbstractUser):
         db_index=True,
         max_length=USERNAME_FIELD_MAX_LENGTH,
         unique=True,
-        validators=[UnicodeUsernameValidator(),]
+        validators=[UnicodeUsernameValidator(), ]
     )
 
     class Meta:

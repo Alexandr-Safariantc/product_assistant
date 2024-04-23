@@ -77,7 +77,7 @@ class Recipe(models.Model):
     )
     cooking_time = models.IntegerField(
         'Время приготовления (в минутах)',
-        validators=[validate_cooking_time,]
+        validators=[validate_cooking_time, ]
     )
     created_at = models.DateTimeField('Дата публикации', auto_now_add=True)
     image = models.ImageField('Картинка', upload_to='recipes/images/')
@@ -109,7 +109,7 @@ class IngredientRecipe(models.Model):
     """Linked model for ingredient - recipe relation."""
 
     amount = models.IntegerField(
-        'Количество ингридиента', validators=[validate_ingredient_amount,]
+        'Количество ингридиента', validators=[validate_ingredient_amount, ]
     )
     ingredient = models.ForeignKey(
         Ingredient, on_delete=models.CASCADE, verbose_name='Ингредиент'

@@ -35,7 +35,7 @@ class CustomTokenCreateSerializer(TokenCreateSerializer):
     password = serializers.CharField(
         max_length=PASSWORD_FIELD_MAX_LENGTH,
         style={'input_type': 'password'},
-        validators=[validate_password,],
+        validators=[validate_password, ],
     )
 
 
@@ -64,7 +64,9 @@ class IngredientRecipeSerializer(serializers.ModelSerializer):
     """Process create and update IngredientRecipe instances."""
 
     id = serializers.PrimaryKeyRelatedField(queryset=Ingredient.objects.all())
-    amount = serializers.IntegerField(validators=[validate_ingredient_amount,])
+    amount = serializers.IntegerField(
+        validators=[validate_ingredient_amount, ]
+    )
 
     class Meta:
         model = IngredientRecipe
@@ -89,7 +91,7 @@ class UserPasswordSerializer(serializers.Serializer):
     new_password = serializers.CharField(
         max_length=PASSWORD_FIELD_MAX_LENGTH,
         style={'input_type': 'password'},
-        validators=[validate_password,]
+        validators=[validate_password, ]
     )
 
     def validate_current_password(self, current_password):
