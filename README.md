@@ -17,7 +17,7 @@
   <p align="center">
     A simple app to find new amaizing recipes
     <br />
-    <a href="#getting-started"><strong>Quick start »</strong></a>
+    <a href="#getting-started"><strong>--> Quick start <--</strong></a>
     <br />
   </p>
 </div>
@@ -43,6 +43,31 @@
   </ol>
 </details>
 
+## Admin credentials
+
+- **project domain name:**
+
+  ```
+  https://kaif.artof.dev
+  ```
+
+- **admin_login:**
+
+  ```
+  ya_food_student
+  ```
+
+- **admin_email:**
+
+  ```
+  student@example.com
+  ```
+
+- **admin_password:**
+  ```
+  23d10m1996y
+  ```
+
 ## Features
 - Addind your fantastic recipes to feed and show them for other users.
 - Editing post with your recipe if you want to make it perfect.
@@ -60,7 +85,7 @@
 ![](https://img.shields.io/badge/nginx-1.22.1-blue)
 ![](https://img.shields.io/badge/gunicorn-20.1.0-blue)
 
-[![Foodgram workflow](https://github.com/Alexandr-Safariantc/foodgram/actions/workflows/main.yml/badge.svg?branch=main)](https://github.com/Alexandr-Safariantc/foodgram/actions/workflows/main.yml)
+[![Main Foodgram workflow](https://github.com/Alexandr-Safariantc/foodgram/actions/workflows/main.yml/badge.svg)](https://github.com/Alexandr-Safariantc/foodgram/actions/workflows/main.yml)
 
 # Getting Started
 
