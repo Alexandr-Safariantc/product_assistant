@@ -138,7 +138,7 @@ REST_FRAMEWORK = {
 DJOSER = {
     'LOGIN_FIELD': 'email',
     'SERIALIZERS': {
-        'token_create': 'api.serializers.CustomTokenCreateSerializer',
+        'token_create': 'api.serializers.AuthTokenCreateSerializer',
     },
 }
 
@@ -178,7 +178,6 @@ AUTH_USER_MODEL = 'users.User'
 EMAIL_FIELD_MAX_LENGTH = 254
 FIRST_LAST_NAME_FIELDS_MAX_LENGTH = 150
 PASSWORD_FIELD_MAX_LENGTH = 150
-ROLE_FIELD_MAX_LENGTH = 50
 USERNAME_FIELD_MAX_LENGTH = 150
 
 # Success/error messages
@@ -190,9 +189,10 @@ CSV_IMPORT_SUCCESS = ('{count} objects from {filename}.csv'
                       ' has been successfully imported into {filename} model')
 FOLLOW_RECIPE_DOES_NOT_EXIST = '{request_object} не существует'
 INVALID_CURRENT_PASSWORD_VALUE = 'Неверное значение поля "Старый пароль"'
-RECIPE_CREATION_WITH_DUPLICATE_INGREDIENTS_TAGS = 'Каждый {field_name} может быть добавлен только один раз'
-RECIPE_CREATION_WITHOUT_INGREDIENTS_TAGS = 'Добавьте хотя бы один {field_name}'
-SHOP_CART_FAVORITES_RECIPE_TWICE_ADDING_DELETING = 'Рецепт уже {action}'
+RECIPE_CREATION_WITH_DUPLICATE_DATA = 'Каждый {field_name} может быть добавлен только один раз'
+RECIPE_CREATION_WITHOUT_REQ_FIELDS = 'Поле {field_name} не может быть пустым'
+SHOP_CART_FAVORITES_TWICE_ADDING_DELETING = 'Рецепт уже {action}'
 SUBSCRIBE_TWICE_TO_SAME_AUTHOR = 'Вы уже подписаны на данного автора'
 SUBSCRIBE_TO_SELF = 'Пользователь не может подписаться на себя'
 SUCCESSFULLY_PASSWORD_SETTING = 'Пароль был изменен успешно'
+USER_CREATION_WITH_USERNAME_ME = 'Укажите корректный логин'
