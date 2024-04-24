@@ -1,8 +1,7 @@
 import io
 
+from django.conf import settings
 from rest_framework.renderers import BaseRenderer
-
-from foodgram_backend.settings import SHOPPING_CART_FILE_HEADERS
 
 
 class TextShoppingCartRenderer(BaseRenderer):
@@ -15,7 +14,9 @@ class TextShoppingCartRenderer(BaseRenderer):
         """Write ingredients data into .txt file."""
         text_buffer = io.StringIO()
         text_buffer.write(
-            ' '.join(header for header in SHOPPING_CART_FILE_HEADERS) + '\n\n'
+            ' '.join(
+                header for header in settings.SHOPPING_CART_FILE_HEADERS
+            ) + '\n\n'
         )
         for ingredient_data in data:
             text_buffer.write(

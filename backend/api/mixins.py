@@ -9,8 +9,6 @@ class ListRetrieveModelViewSet(
 ):
     """Mixin for list and retrieve methods, contains SearchFilter."""
 
-    pass
-
 
 class CreateDestroyListRetrieveModelViewSet(
     CreateModelMixin,
@@ -18,5 +16,3 @@ class CreateDestroyListRetrieveModelViewSet(
     ListRetrieveModelViewSet,
 ):
     """Mixin for create, delete, list and retrieve methods."""
-
-    pass

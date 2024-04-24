@@ -4,15 +4,12 @@ from recipes.models import Favorite, ShoppingCartRecipe
 from users.models import Follow
 
 
-class CustomSerializer(ModelSerializer):
+class GetBoolFieldsSerializer(ModelSerializer):
     """Serializer with get_bool_field_value method."""
 
     def get_bool_field_value(self, model, current_user, obj):
-        """
-        Get bool value for is_subscribed, is_favorited,
-        is_in_shopping_cart fields.
-        """
-        if current_user.is_anonymous:
+        """Get bool value for serializer fields."""
+        if not current_user.is_authenticated:
             return False
         if model == Favorite or model == ShoppingCartRecipe:
             return model.objects.filter(

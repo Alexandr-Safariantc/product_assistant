@@ -1,4 +1,6 @@
+from django.conf import settings
 from django.contrib.auth.hashers import make_password
+from django.db.models import Sum
 from django.shortcuts import get_object_or_404
 from django.utils.timezone import now
 from django_filters.rest_framework import DjangoFilterBackend
@@ -14,23 +16,16 @@ from rest_framework.permissions import (
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
-from foodgram_backend.settings import (
-    FOLLOW_RECIPE_DOES_NOT_EXIST,
-    SHOP_CART_FAVORITES_RECIPE_TWICE_ADDING_DELETING,
-    SUCCESSFULLY_PASSWORD_SETTING
-)
-from recipes.models import (
-    Favorite, Ingredient, Recipe, ShoppingCartRecipe, Tag
-)
-from users.models import Follow, User
-from .custom_viewsets import (
+from api.mixins import (
     CreateDestroyListRetrieveModelViewSet, ListRetrieveModelViewSet
 )
-from .filters import IngredientFilter, RecipeFilter
-from .paginators import RecipesPagination, UsersPagination
-from .permissions import IsAuthorOrAdminOrSuperuser
-from .renderers import TextShoppingCartRenderer
-from .serializers import (
+from api.filters import IngredientFilter, RecipeFilter
+from api.paginators import RecipesPagination, UsersPagination
+from api.permissions import IsAuthor
+from api.renderers import TextShoppingCartRenderer
+from api.serializers import (
+    CreateFavoriteSerializer,
+    CreateShoppingCartRecipeSerializer,
     FavoriteShoppingCartRecipeSerializer,
     FollowSerializer,
     IngredientSerializer,
@@ -41,9 +36,13 @@ from .serializers import (
     UserRegistationSerializer,
     UserSerializer,
 )
+from recipes.models import (
+    Favorite, Ingredient, Recipe, ShoppingCartRecipe, Tag
+)
+from users.models import Follow, User
 
 
-class CustomTokenCreateView(TokenCreateView):
+class AuthTokenCreateView(TokenCreateView):
     """Process user authentication token obtaining."""
 
     def _action(self, serializer):
@@ -66,20 +65,14 @@ class IngredientViewSet(ListRetrieveModelViewSet):
 
 
 class RecipeViewSet(ModelViewSet):
-    """
-    Process standard methods with Recipe instances except PUT one.
-    Process create, list, retrieve methods with Favorite instances.
-    Process create, delete, list methods with ShoppingCartRecipe instances.
-    """
+    """Process methods with Recipe, Favorite, ShoppingCartRecipe instances."""
 
     http_method_names = ['get', 'post', 'patch', 'delete']
     queryset = Recipe.objects.all()
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
     pagination_class = RecipesPagination
-    permission_classes = (
-        IsAuthenticatedOrReadOnly, IsAuthorOrAdminOrSuperuser
-    )
+    permission_classes = (IsAuthenticatedOrReadOnly, IsAuthor)
     serializer_class = RecipeSerializer
 
     def perform_create(self, serializer):
@@ -96,9 +89,13 @@ class RecipeViewSet(ModelViewSet):
     def manage_favorite_recipes(self, request, pk):
         """Add recipe to favorites of request user or delete one."""
         if request.method == 'POST':
-            return self.add_recipe(Favorite, request.user, pk)
-        else:
-            return self.delete_recipe(Favorite, request.user, pk)
+            return self.add_recipe(
+                Favorite,
+                CreateFavoriteSerializer,
+                request,
+                pk
+            )
+        return self.delete_recipe(Favorite, request.user, pk)
 
     @action(
         detail=True,
@@ -110,34 +107,22 @@ class RecipeViewSet(ModelViewSet):
     def manage_shopping_cart_recipes(self, request, pk):
         """Add recipe to shopping cart of request user or delete one."""
         if request.method == 'POST':
-            return self.add_recipe(ShoppingCartRecipe, request.user, pk)
-        else:
-            return self.delete_recipe(ShoppingCartRecipe, request.user, pk)
+            return self.add_recipe(
+                ShoppingCartRecipe,
+                CreateShoppingCartRecipeSerializer,
+                request,
+                pk
+            )
+        return self.delete_recipe(ShoppingCartRecipe, request.user, pk)
 
-    def add_recipe(self, model, current_user, recipe_id):
+    def add_recipe(self, model, serializer, request, recipe_id):
         """Add recipe to favorites or shopping cart of request user."""
-        if model.objects.filter(
-            recipe__id=recipe_id, user=current_user
-        ).exists():
-            return Response(
-                data={
-                    'error':
-                    SHOP_CART_FAVORITES_RECIPE_TWICE_ADDING_DELETING.format(
-                        action='добавлен'
-                    )},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        try:
-            recipe = Recipe.objects.get(id=recipe_id)
-        except Recipe.DoesNotExist:
-            return Response(
-                data={
-                    'error': FOLLOW_RECIPE_DOES_NOT_EXIST.format(
-                        request_object='Запрашиваемый рецепт'
-                    )},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        model.objects.create(recipe=recipe, user=current_user)
+        serializer(
+            context={'request': request},
+            data={'user': request.user.id, 'recipe': recipe_id}
+        ).is_valid(raise_exception=True)
+        recipe = Recipe.objects.get(id=recipe_id)
+        model.objects.create(recipe=recipe, user=request.user)
         return Response(
             FavoriteShoppingCartRecipeSerializer(recipe).data,
             status=status.HTTP_201_CREATED
@@ -155,7 +140,7 @@ class RecipeViewSet(ModelViewSet):
         return Response(
             data={
                 'error':
-                SHOP_CART_FAVORITES_RECIPE_TWICE_ADDING_DELETING.format(
+                settings.SHOP_CART_FAVORITES_TWICE_ADDING_DELETING.format(
                     action='удален'
                 )},
             status=status.HTTP_400_BAD_REQUEST
@@ -180,33 +165,19 @@ class RecipeViewSet(ModelViewSet):
         RecipeReadSerializer(
             context={'request': request}, data=queryset, many=True
         ).is_valid()
-        all_recipes_ingredients = [
-            RecipeReadSerializer.get_ingredients(self, obj=recipe)
-            for recipe in queryset
-        ]
-        all_ingredients = []
-        for recipe_ingredients in all_recipes_ingredients:
-            for ingredient in recipe_ingredients:
-                all_ingredients.append(ingredient)
-        unique_ingredients_ids = []
-        for ingredient in sorted(
-            all_ingredients, key=lambda name: name['name']
-        ):
-            id = ingredient.get('id')
-            if id not in unique_ingredients_ids:
-                unique_ingredients_ids.append(id)
+        ingredients_data = queryset.values(
+            'ingredients__name', 'ingredients__measurement_unit',
+        ).order_by('ingredients__name').annotate(
+            amount=Sum('ingredientsrecipes__amount')
+        )
         shopping_cart = []
-        for number, id in enumerate(unique_ingredients_ids, start=1):
-            amount = 0
-            unique_ingredient = Ingredient.objects.get(id=id)
-            for ingredient in all_ingredients:
-                if ingredient.get('id') == id:
-                    amount += ingredient.get('amount')
+        for number, obj in enumerate(ingredients_data, start=1):
             shopping_cart.append({
                 'number': f'{number}.',
-                'name': unique_ingredient.name.capitalize(),
-                'measurement_unit': f'({unique_ingredient.measurement_unit})',
-                'amount': f'— {amount}'
+                'name': obj.get('ingredients__name').capitalize(),
+                'measurement_unit':
+                f'({obj.get("ingredients__measurement_unit")})',
+                'amount': f'— {obj.get("amount")}'
             })
         return Response(
             data=shopping_cart,
@@ -227,10 +198,7 @@ class TagViewSet(ListRetrieveModelViewSet):
 
 
 class UserViewSet(CreateDestroyListRetrieveModelViewSet):
-    """
-    Process create, list, retrieve methods with User instances.
-    Process create, delete, list methods with Follow instances.
-    """
+    """Process methods with User, Follow instances."""
 
     filter_backends = (SearchFilter,)
     queryset = User.objects.all()
@@ -282,7 +250,7 @@ class UserViewSet(CreateDestroyListRetrieveModelViewSet):
             user.set_password(serializer.validated_data.get('new_password'))
             user.save()
             return Response(
-                data={'success': SUCCESSFULLY_PASSWORD_SETTING},
+                data={'success': settings.SUCCESSFULLY_PASSWORD_SETTING},
                 status=status.HTTP_204_NO_CONTENT
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -320,19 +288,20 @@ class UserViewSet(CreateDestroyListRetrieveModelViewSet):
                 author, data=request.data, context={'request': request}
             )
             serializer.is_valid(raise_exception=True)
-            Follow.objects.create(user=current_user, following_author=author)
+            Follow.objects.create(
+                user=current_user, following_author=author
+            ).save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        if request.method == 'DELETE':
-            try:
-                Follow.objects.get(
-                    following_author=author, user=current_user
-                ).delete()
-            except Follow.DoesNotExist:
-                return Response(
-                    data={
-                        'error': FOLLOW_RECIPE_DOES_NOT_EXIST.format(
-                            request_object='Запрашиваемая подписка'
-                        )},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            return Response(status=status.HTTP_204_NO_CONTENT)
+        try:
+            Follow.objects.get(
+                following_author=author, user=current_user
+            ).delete()
+        except Follow.DoesNotExist:
+            return Response(
+                data={
+                    'error': settings.FOLLOW_RECIPE_DOES_NOT_EXIST.format(
+                        request_object='Запрашиваемая подписка'
+                    )},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        return Response(status=status.HTTP_204_NO_CONTENT)
