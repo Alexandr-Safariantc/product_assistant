@@ -1,4 +1,4 @@
-email,first_name,last_name,password,role,username
-first_test_user@example.com,Джеки,Чан,first_test_user123,user,Jacky_Ch
-second_test_user@example.com,Майкл,Джексон,second_test_user123,user,Michael_J
-third_test_user@example.com,Август,Германик,third_test_user123,admin,Kaligula
+email,first_name,last_name,password,username
+first_test_user@example.com,Джеки,Чан,first_test_user123,Jacky_Ch
+second_test_user@example.com,Майкл,Джексон,second_test_user123,Michael_J
+third_test_user@example.com,Август,Германик,third_test_user123,Kaligula
