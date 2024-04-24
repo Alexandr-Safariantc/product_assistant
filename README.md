@@ -43,31 +43,6 @@
   </ol>
 </details>
 
-## Admin credentials
-
-- **project domain name:**
-
-  ```
-  https://kaif.artof.dev
-  ```
-
-- **admin_login:**
-
-  ```
-  ya_food_student
-  ```
-
-- **admin_email:**
-
-  ```
-  student@example.com
-  ```
-
-- **admin_password:**
-  ```
-  23d10m1996y
-  ```
-
 ## Features
 - Addind your fantastic recipes to feed and show them for other users.
 - Editing post with your recipe if you want to make it perfect.
@@ -123,17 +98,30 @@
     ```sh
     (venv) $ cd backend/
     (venv) $ pip install -r requirements.txt
-   ```
+    ```
 
 5. Migrate database
     ```sh
     (venv) $ python3 manage.py migrate
-   ```
+    ```
 
-6. Run app
+6. Migrate database
+    ```sh
+    (venv) $ python3 manage.py import_csv
+    ```
+
+7. Run app
     ```sh
     (venv) $ python3 manage.py runserver
-   ```
+    ```
+
+### Get API docs
+
+  - To get API documentation go to following URL via browser
+
+    ```sh
+    https://kaif.artof.dev/api/docs/
+    ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
