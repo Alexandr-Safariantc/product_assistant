@@ -1,7 +1,15 @@
+from django.conf import settings
 from django.contrib import admin
 
-from foodgram_backend.settings import ADMIN_SITE_EMPTY_VALUE
-from .models import Favorite, Ingredient, Recipe, ShoppingCartRecipe, Tag
+from recipes.models import (
+    Favorite,
+    Ingredient,
+    IngredientRecipe,
+    Recipe,
+    ShoppingCartRecipe,
+    Tag,
+    TagRecipe
+)
 
 
 class FavoriteInline(admin.StackedInline):
@@ -9,11 +17,21 @@ class FavoriteInline(admin.StackedInline):
     extra = 0
 
 
+class IngredientRecipeInline(admin.StackedInline):
+    model = IngredientRecipe
+    extra = 0
+
+
+class TagRecipeInline(admin.StackedInline):
+    model = TagRecipe
+    extra = 0
+
+
 @admin.register(Favorite)
 class FavoriteAdmin(admin.ModelAdmin):
     list_display = ('user', 'recipe', 'created_at',)
-    list_filter = ('user',)
-    search_fields = ('user', 'recipe')
+    list_filter = ('user__username',)
+    search_fields = ('user__username', 'recipe_name')
 
 
 @admin.register(Ingredient)
@@ -26,7 +44,7 @@ class IngredientAdmin(admin.ModelAdmin):
 
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
-    inlines = (FavoriteInline,)
+    inlines = (FavoriteInline, IngredientRecipeInline, TagRecipeInline)
     list_display = (
         'author',
         'name',
@@ -53,4 +71,4 @@ class TagAdmin(admin.ModelAdmin):
     search_fields = ('name', 'slug', 'color',)
 
 
-admin.site.empty_value_display = ADMIN_SITE_EMPTY_VALUE
+admin.site.empty_value_display = settings.ADMIN_SITE_EMPTY_VALUE

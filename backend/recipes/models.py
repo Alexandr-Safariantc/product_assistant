@@ -1,24 +1,24 @@
 from colorfield.fields import ColorField
 from django.db import models
+from django.conf import settings
 
-from foodgram_backend.settings import (
-    INGREDIENT_NAME_MAX_LENGTH,
-    MEASUREMENT_NAME_MAX_LENGTH,
-    RECIPE_NAME_MAX_LENGTH,
-    TAG_NAME_SLUG_MAX_LENGTH
+from recipes.validators import (
+    validate_cooking_time, validate_ingredient_amount
 )
+from recipes.utils import get_random_hex_code
 from users.models import User
-from .validators import validate_cooking_time, validate_ingredient_amount
 
 
 class Ingredient(models.Model):
     """Describe ingredient model."""
 
     name = models.CharField(
-        'Название', db_index=True, max_length=INGREDIENT_NAME_MAX_LENGTH,
+        'Название',
+        db_index=True,
+        max_length=settings.INGREDIENT_NAME_MAX_LENGTH,
     )
     measurement_unit = models.CharField(
-        'Единица измерения', max_length=MEASUREMENT_NAME_MAX_LENGTH
+        'Единица измерения', max_length=settings.MEASUREMENT_NAME_MAX_LENGTH
     )
 
     class Meta:
@@ -28,7 +28,6 @@ class Ingredient(models.Model):
                 name='unique_name_measurement_unit'
             )
         ]
-        default_related_name = 'ingredients'
         ordering = ('name',)
         verbose_name = 'ингредиент'
         verbose_name_plural = 'Ингредиенты'
@@ -44,19 +43,22 @@ class Tag(models.Model):
     name = models.CharField(
         'Название',
         db_index=True,
-        max_length=TAG_NAME_SLUG_MAX_LENGTH,
+        max_length=settings.TAG_NAME_SLUG_MAX_LENGTH,
         unique=True
     )
-    color = ColorField('Цветовой код (Hex)', default='#FF0000')
+    color = ColorField(
+        'Цветовой код (Hex)',
+        default=get_random_hex_code,
+        unique=True
+    )
     slug = models.SlugField(
         'Идентификатор',
         db_index=True,
-        max_length=TAG_NAME_SLUG_MAX_LENGTH,
+        max_length=settings.TAG_NAME_SLUG_MAX_LENGTH,
         unique=True
     )
 
     class Meta:
-        default_related_name = 'tags'
         ordering = ('name',)
         verbose_name = 'тег'
         verbose_name_plural = 'Теги'
@@ -75,14 +77,14 @@ class Recipe(models.Model):
         on_delete=models.CASCADE,
         verbose_name='Автор рецепта'
     )
-    cooking_time = models.IntegerField(
+    cooking_time = models.PositiveSmallIntegerField(
         'Время приготовления (в минутах)',
-        validators=[validate_cooking_time, ]
+        validators=[validate_cooking_time]
     )
     created_at = models.DateTimeField('Дата публикации', auto_now_add=True)
     image = models.ImageField('Картинка', upload_to='recipes/images/')
     name = models.CharField(
-        'Название', db_index=True, max_length=RECIPE_NAME_MAX_LENGTH
+        'Название', db_index=True, max_length=settings.RECIPE_NAME_MAX_LENGTH
     )
     ingredients = models.ManyToManyField(
         Ingredient,
@@ -108,8 +110,8 @@ class Recipe(models.Model):
 class IngredientRecipe(models.Model):
     """Linked model for ingredient - recipe relation."""
 
-    amount = models.IntegerField(
-        'Количество ингридиента', validators=[validate_ingredient_amount, ]
+    amount = models.PositiveSmallIntegerField(
+        'Количество ингридиента', validators=[validate_ingredient_amount]
     )
     ingredient = models.ForeignKey(
         Ingredient, on_delete=models.CASCADE, verbose_name='Ингредиент'
@@ -125,6 +127,10 @@ class IngredientRecipe(models.Model):
                 name='unique_recipe_ingredient'
             )
         ]
+        default_related_name = 'ingredientsrecipes'
+        ordering = ('ingredient__name', 'recipe__name')
+        verbose_name = 'ингредиент для рецепта'
+        verbose_name_plural = 'Ингредиенты для рецептов'
 
     def __str__(self):
         """Return instance text representation."""
@@ -145,75 +151,62 @@ class TagRecipe(models.Model):
                 fields=['tag', 'recipe'], name='unique_tag_recipe'
             )
         ]
+        default_related_name = 'tagsrecipes'
+        ordering = ('tag__name', 'recipe__name')
+        verbose_name = 'тег рецепта'
+        verbose_name_plural = 'Теги рецептов'
 
     def __str__(self):
         """Return instance text representation."""
         return f'Тег: {self.tag} для рецепта: {self.recipe}'
 
 
-class Favorite(models.Model):
-    """Describe favorite recipes of users."""
+class CreateTimeRecipeUserModel(models.Model):
+    """Describe created_at, recipe-related, user-related fields."""
 
     created_at = models.DateTimeField('Дата добавления', auto_now_add=True)
     recipe = models.ForeignKey(
-        Recipe,
-        on_delete=models.CASCADE,
-        related_name='favorites',
-        verbose_name='Рецепт'
+        Recipe, on_delete=models.CASCADE, verbose_name='Рецепт'
     )
     user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='favorites_owners',
-        verbose_name='Пользователь'
+        User, on_delete=models.CASCADE, verbose_name='Пользователь'
     )
 
     class Meta:
+        abstract = True
         constraints = [
             models.UniqueConstraint(
                 fields=['user', 'recipe'],
-                name='unique_user_favorite_recipe'
+                name='unique_user_recipe'
             )
         ]
         ordering = ('-created_at', 'recipe__name')
+
+    def __str__(self, group_name):
+        """Return instance text representation."""
+        return (f'Рецепт {self.recipe} из {group_name}'
+                f' пользователя: {self.user}')
+
+
+class Favorite(CreateTimeRecipeUserModel):
+    """Describe favorite recipes of users."""
+
+    class Meta:
+        default_related_name = 'favorites'
         verbose_name = 'избранные рецепты'
         verbose_name_plural = 'Избранные рецепты'
 
-    def __str__(self):
-        """Return instance text representation."""
-        return (f'Избранный рецепт: {self.recipe}'
-                f' пользователя: {self.user}')
+    def __str__(self, group_name='избранного'):
+        return super().__str__(group_name)
 
 
-class ShoppingCartRecipe(models.Model):
+class ShoppingCartRecipe(CreateTimeRecipeUserModel):
     """Describe recipes of users' shopping cart."""
 
-    created_at = models.DateTimeField('Дата добавления', auto_now_add=True)
-    recipe = models.ForeignKey(
-        Recipe,
-        on_delete=models.CASCADE,
-        related_name='recipes_to_buy',
-        verbose_name='Рецепт'
-    )
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='cart_owners',
-        verbose_name='Пользователь'
-    )
-
     class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=['user', 'recipe'],
-                name='unique_user_shopping_cart_recipe'
-            )
-        ]
-        ordering = ('-created_at', 'recipe__name',)
+        default_related_name = 'shopping_cart_recipes'
         verbose_name = 'список покупок'
         verbose_name_plural = 'Список покупок'
 
-    def __str__(self):
-        """Return instance text representation."""
-        return (f'Рецепт {self.recipe} из списка покупок'
-                f' пользователя: {self.user}')
+    def __str__(self, group_name='списка покупок'):
+        return super().__str__(group_name)
