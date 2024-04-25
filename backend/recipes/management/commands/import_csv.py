@@ -1,11 +1,9 @@
 import csv
 
+from django.conf import settings
 from django.db.transaction import atomic
 from django.core.management.base import BaseCommand
 
-from foodgram_backend.settings import (
-    CSV_DATA_DIRECTORY_PATH, CSV_IMPORT_PROCCESSING, CSV_IMPORT_SUCCESS
-)
 from recipes.models import (
     Favorite,
     Ingredient,
@@ -21,7 +19,7 @@ from users.models import Follow, User
 class Command(BaseCommand):
     """Describe custom Django commands."""
 
-    csv_path = CSV_DATA_DIRECTORY_PATH
+    csv_path = settings.CSV_DATA_DIRECTORY_PATH
     tables = {
         'ingredients': Ingredient,
         'tags': Tag,
@@ -109,9 +107,11 @@ class Command(BaseCommand):
         """Print process and success import message."""
         if obj_count is None:
             self.stdout.write(self.style.NOTICE(
-                CSV_IMPORT_PROCCESSING.format(filename=name)
+                settings.CSV_IMPORT_PROCCESSING.format(filename=name)
             ))
         else:
             self.stdout.write(self.style.SUCCESS(
-                CSV_IMPORT_SUCCESS.format(count=obj_count, filename=name)
+                settings.CSV_IMPORT_SUCCESS.format(
+                    count=obj_count, filename=name
+                )
             ))
