@@ -32,6 +32,7 @@
     <li>
       <a href="#getting-started">Getting Started</a>
       <ul>
+        <li><a href="#Get project">Get project</a></li>
         <li><a href="#Run as python script">Run as python script</a></li>
         <li><a href="#Setting up CI/CD pipeline on GitHub Actions">CI/CD pipeline</a></li>
         <li><a href="#Secrets">Secrets</a></li>
@@ -63,6 +64,12 @@
 [![Main Foodgram workflow](https://github.com/Alexandr-Safariantc/foodgram/actions/workflows/main.yml/badge.svg)](https://github.com/Alexandr-Safariantc/foodgram/actions/workflows/main.yml)
 
 # Getting Started
+
+## Get project
+
+#### Go to <a href="https://kaif.artof.dev/">Project</a>
+
+#### Get <a href="https://kaif.artof.dev/api/docs/">API documentation</a>
 
 ## Run as python script
 ### Prerequisites
@@ -105,7 +112,7 @@
     (venv) $ python3 manage.py migrate
     ```
 
-6. Migrate database
+6. Add test data to database
     ```sh
     (venv) $ python3 manage.py import_csv
     ```
@@ -113,14 +120,6 @@
 7. Run app
     ```sh
     (venv) $ python3 manage.py runserver
-    ```
-
-### Get API docs
-
-  - To get API documentation go to following URL via browser
-
-    ```sh
-    https://kaif.artof.dev/api/docs/
     ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
