@@ -199,7 +199,7 @@ class FollowSerializer(UserSerializer):
         """Get recipes of following author."""
         recipes = obj.recipes.all()
         recipes_limit = self.context.get('request').GET.get('recipes_limit')
-        if recipes_limit and recipes_limit.isalnum():
+        if recipes_limit and recipes_limit.isdigit():
             recipes = recipes[:int(recipes_limit)]
         serializer = FavoriteShoppingCartRecipeSerializer(
             recipes,
@@ -243,7 +243,9 @@ class RecipeReadSerializer(GetBoolFieldsSerializer):
 
     author = UserSerializer(read_only=True)
     image = Base64ImageField()
-    ingredients = serializers.SerializerMethodField()
+    ingredients = IngredientRecipeReadSerializer(
+        many=True, read_only=True, source='ingredients_recipes'
+    )
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
     tags = TagSerializer(many=True)
@@ -262,12 +264,6 @@ class RecipeReadSerializer(GetBoolFieldsSerializer):
             'tags',
             'text',
         )
-
-    def get_ingredients(self, obj):
-        """Get recipe's ingridients info."""
-        return IngredientRecipeReadSerializer(
-            IngredientRecipe.objects.filter(recipe=obj), many=True
-        ).data
 
     def get_is_favorited(self, obj):
         """
@@ -389,8 +385,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         IngredientRecipe.objects.filter(recipe=instance).delete()
         self.create_recipe_ingredients(ingredients, instance)
         instance.tags.set(tags)
-        super().update(instance, validated_data)
-        return instance
+        return super().update(instance, validated_data)
 
     def to_representation(self, instance):
         """Define serializer class for response."""

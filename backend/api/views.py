@@ -16,9 +16,6 @@ from rest_framework.permissions import (
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
-from api.mixins import (
-    CreateDestroyListRetrieveModelViewSet, ListRetrieveModelViewSet
-)
 from api.filters import IngredientFilter, RecipeFilter
 from api.paginators import RecipesPagination, UsersPagination
 from api.permissions import IsAuthor
@@ -35,6 +32,9 @@ from api.serializers import (
     UserPasswordSerializer,
     UserRegistationSerializer,
     UserSerializer,
+)
+from api.viewsets import (
+    CreateDestroyListRetrieveModelViewSet, ListRetrieveModelViewSet
 )
 from recipes.models import (
     Favorite, Ingredient, Recipe, ShoppingCartRecipe, Tag
@@ -122,7 +122,7 @@ class RecipeViewSet(ModelViewSet):
             data={'user': request.user.id, 'recipe': recipe_id}
         ).is_valid(raise_exception=True)
         recipe = Recipe.objects.get(id=recipe_id)
-        model.objects.create(recipe=recipe, user=request.user)
+        model.objects.create(recipe=recipe, user=request.user).save()
         return Response(
             FavoriteShoppingCartRecipeSerializer(recipe).data,
             status=status.HTTP_201_CREATED
@@ -165,22 +165,14 @@ class RecipeViewSet(ModelViewSet):
         RecipeReadSerializer(
             context={'request': request}, data=queryset, many=True
         ).is_valid()
-        ingredients_data = queryset.values(
-            'ingredients__name', 'ingredients__measurement_unit',
-        ).order_by('ingredients__name').annotate(
-            amount=Sum('ingredientsrecipes__amount')
-        )
-        shopping_cart = []
-        for number, obj in enumerate(ingredients_data, start=1):
-            shopping_cart.append({
-                'number': f'{number}.',
-                'name': obj.get('ingredients__name').capitalize(),
-                'measurement_unit':
-                f'({obj.get("ingredients__measurement_unit")})',
-                'amount': f'— {obj.get("amount")}'
-            })
         return Response(
-            data=shopping_cart,
+            data=TextShoppingCartRenderer.format_ingredients_data(
+                queryset.values(
+                    'ingredients__name', 'ingredients__measurement_unit',
+                ).order_by('ingredients__name').annotate(
+                    amount=Sum('ingredients_recipes__amount')
+                )
+            ),
             headers={
                 'Content-Disposition': 'attachment; '
                 f'filename=foodgram_shopping_cart_'

@@ -10,6 +10,20 @@ class TextShoppingCartRenderer(BaseRenderer):
     media_type = 'text/plain'
     format = 'txt'
 
+    @staticmethod
+    def format_ingredients_data(data: list[dict]):
+        """Return numerated and formatted ingredients data."""
+        return [
+            {
+                'number': f'{number}.',
+                'name': obj.get('ingredients__name').capitalize(),
+                'measurement_unit':
+                f'({obj.get("ingredients__measurement_unit")})',
+                'amount': f'— {obj.get("amount")}'
+            }
+            for number, obj in enumerate(data, start=1)
+        ]
+
     def render(self, data, accepted_media_type=None, renderer_context=None):
         """Write ingredients data into .txt file."""
         text_buffer = io.StringIO()
