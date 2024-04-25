@@ -1,6 +1,6 @@
 from colorfield.fields import ColorField
-from django.db import models
 from django.conf import settings
+from django.db import models
 
 from recipes.validators import (
     validate_cooking_time, validate_ingredient_amount
@@ -12,14 +12,8 @@ from users.models import User
 class Ingredient(models.Model):
     """Describe ingredient model."""
 
-    name = models.CharField(
-        'Название',
-        db_index=True,
-        max_length=settings.INGREDIENT_NAME_MAX_LENGTH,
-    )
-    measurement_unit = models.CharField(
-        'Единица измерения', max_length=settings.MEASUREMENT_NAME_MAX_LENGTH
-    )
+    name = models.TextField('Название', db_index=True)
+    measurement_unit = models.TextField('Единица измерения')
 
     class Meta:
         constraints = [
@@ -34,29 +28,18 @@ class Ingredient(models.Model):
 
     def __str__(self):
         """Return instance text representation."""
-        return f'Ингредиент: {self.name}'
+        return ('Ингредиент: '
+                f'{self.name[:settings.INGREDIENT_NAME_REPR_MAX_LENGTH]}...')
 
 
 class Tag(models.Model):
     """Describe tag model."""
 
-    name = models.CharField(
-        'Название',
-        db_index=True,
-        max_length=settings.TAG_NAME_SLUG_MAX_LENGTH,
-        unique=True
-    )
+    name = models.TextField('Название', db_index=True, unique=True)
     color = ColorField(
-        'Цветовой код (Hex)',
-        default=get_random_hex_code,
-        unique=True
+        'Цветовой код (Hex)', default=get_random_hex_code, unique=True
     )
-    slug = models.SlugField(
-        'Идентификатор',
-        db_index=True,
-        max_length=settings.TAG_NAME_SLUG_MAX_LENGTH,
-        unique=True
-    )
+    slug = models.SlugField('Идентификатор', db_index=True, unique=True)
 
     class Meta:
         ordering = ('name',)
@@ -65,7 +48,7 @@ class Tag(models.Model):
 
     def __str__(self):
         """Return instance text representation."""
-        return f'Тег: {self.name}'
+        return f'Тег: {self.name[:settings.TAG_NAME_REPR_MAX_LENGTH]}...'
 
 
 class Recipe(models.Model):
@@ -127,7 +110,7 @@ class IngredientRecipe(models.Model):
                 name='unique_recipe_ingredient'
             )
         ]
-        default_related_name = 'ingredientsrecipes'
+        default_related_name = 'ingredients_recipes'
         ordering = ('ingredient__name', 'recipe__name')
         verbose_name = 'ингредиент для рецепта'
         verbose_name_plural = 'Ингредиенты для рецептов'
@@ -151,7 +134,7 @@ class TagRecipe(models.Model):
                 fields=['tag', 'recipe'], name='unique_tag_recipe'
             )
         ]
-        default_related_name = 'tagsrecipes'
+        default_related_name = 'tags_recipes'
         ordering = ('tag__name', 'recipe__name')
         verbose_name = 'тег рецепта'
         verbose_name_plural = 'Теги рецептов'
@@ -174,12 +157,6 @@ class CreateTimeRecipeUserModel(models.Model):
 
     class Meta:
         abstract = True
-        constraints = [
-            models.UniqueConstraint(
-                fields=['user', 'recipe'],
-                name='unique_user_recipe'
-            )
-        ]
         ordering = ('-created_at', 'recipe__name')
 
     def __str__(self, group_name):
@@ -193,6 +170,12 @@ class Favorite(CreateTimeRecipeUserModel):
 
     class Meta:
         default_related_name = 'favorites'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'recipe'],
+                name='unique_user_favorite_recipe'
+            )
+        ]
         verbose_name = 'избранные рецепты'
         verbose_name_plural = 'Избранные рецепты'
 
@@ -205,6 +188,12 @@ class ShoppingCartRecipe(CreateTimeRecipeUserModel):
 
     class Meta:
         default_related_name = 'shopping_cart_recipes'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'recipe'],
+                name='unique_user_shopping_cart_recipe'
+            )
+        ]
         verbose_name = 'список покупок'
         verbose_name_plural = 'Список покупок'
 

@@ -20,18 +20,20 @@ class FavoriteInline(admin.StackedInline):
 class IngredientRecipeInline(admin.StackedInline):
     model = IngredientRecipe
     extra = 0
+    min_num = 1
 
 
 class TagRecipeInline(admin.StackedInline):
     model = TagRecipe
     extra = 0
+    min_num = 1
 
 
 @admin.register(Favorite)
 class FavoriteAdmin(admin.ModelAdmin):
     list_display = ('user', 'recipe', 'created_at',)
     list_filter = ('user__username',)
-    search_fields = ('user__username', 'recipe_name')
+    search_fields = ('user__username', 'recipe__name')
 
 
 @admin.register(Ingredient)
@@ -53,14 +55,14 @@ class RecipeAdmin(admin.ModelAdmin):
     )
     list_editable = ('name',)
     list_filter = ('author', 'name', 'ingredients', 'tags')
-    search_fields = ('author', 'name', 'ingredients', 'tags')
+    search_fields = ('author__username', 'name', 'ingredients', 'tags')
 
 
 @admin.register(ShoppingCartRecipe)
 class ShoppingCartRecipeAdmin(admin.ModelAdmin):
     list_display = ('user', 'recipe', 'created_at',)
     list_filter = ('user',)
-    search_fields = ('user', 'recipe')
+    search_fields = ('user__username', 'recipe__name')
 
 
 @admin.register(Tag)
