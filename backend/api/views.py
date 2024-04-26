@@ -23,7 +23,6 @@ from api.renderers import TextShoppingCartRenderer
 from api.serializers import (
     CreateFavoriteSerializer,
     CreateShoppingCartRecipeSerializer,
-    FavoriteShoppingCartRecipeSerializer,
     FollowSerializer,
     IngredientSerializer,
     RecipeReadSerializer,
@@ -117,14 +116,16 @@ class RecipeViewSet(ModelViewSet):
 
     def add_recipe(self, model, serializer, request, recipe_id):
         """Add recipe to favorites or shopping cart of request user."""
-        serializer(
+        model_serializer = serializer(
             context={'request': request},
             data={'user': request.user.id, 'recipe': recipe_id}
-        ).is_valid(raise_exception=True)
-        recipe = Recipe.objects.get(id=recipe_id)
-        model.objects.create(recipe=recipe, user=request.user).save()
+        )
+        model_serializer.is_valid(raise_exception=True)
+        model_serializer.save()
         return Response(
-            FavoriteShoppingCartRecipeSerializer(recipe).data,
+            model_serializer.to_representation(
+                Recipe.objects.get(id=recipe_id)
+            ),
             status=status.HTTP_201_CREATED
         )
 
@@ -280,9 +281,7 @@ class UserViewSet(CreateDestroyListRetrieveModelViewSet):
                 author, data=request.data, context={'request': request}
             )
             serializer.is_valid(raise_exception=True)
-            Follow.objects.create(
-                user=current_user, following_author=author
-            ).save()
+            Follow(user=current_user, following_author=author).save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         try:
             Follow.objects.get(
