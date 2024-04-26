@@ -12,8 +12,15 @@ from users.models import User
 class Ingredient(models.Model):
     """Describe ingredient model."""
 
-    name = models.TextField('Название', db_index=True)
-    measurement_unit = models.TextField('Единица измерения')
+    name = models.CharField(
+        'Название',
+        max_length=settings.INGREDIENT_NAME_MEASURE_MAX_LENGTH,
+        db_index=True
+    )
+    measurement_unit = models.CharField(
+        'Единица измерения',
+        max_length=settings.INGREDIENT_NAME_MEASURE_MAX_LENGTH
+    )
 
     class Meta:
         constraints = [
@@ -28,18 +35,27 @@ class Ingredient(models.Model):
 
     def __str__(self):
         """Return instance text representation."""
-        return ('Ингредиент: '
-                f'{self.name[:settings.INGREDIENT_NAME_REPR_MAX_LENGTH]}...')
+        return f'Ингредиент: {self.name}'
 
 
 class Tag(models.Model):
     """Describe tag model."""
 
-    name = models.TextField('Название', db_index=True, unique=True)
+    name = models.CharField(
+        'Название',
+        db_index=True,
+        max_length=settings.TAG_NAME_SLUG_MAX_LENGTH,
+        unique=True
+    )
     color = ColorField(
         'Цветовой код (Hex)', default=get_random_hex_code, unique=True
     )
-    slug = models.SlugField('Идентификатор', db_index=True, unique=True)
+    slug = models.SlugField(
+        'Идентификатор',
+        db_index=True,
+        max_length=settings.TAG_NAME_SLUG_MAX_LENGTH,
+        unique=True
+    )
 
     class Meta:
         ordering = ('name',)
@@ -48,7 +64,7 @@ class Tag(models.Model):
 
     def __str__(self):
         """Return instance text representation."""
-        return f'Тег: {self.name[:settings.TAG_NAME_REPR_MAX_LENGTH]}...'
+        return f'Тег: {self.name}'
 
 
 class Recipe(models.Model):
