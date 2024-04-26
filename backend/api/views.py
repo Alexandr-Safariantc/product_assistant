@@ -22,6 +22,7 @@ from api.permissions import IsAuthor
 from api.renderers import TextShoppingCartRenderer
 from api.serializers import (
     CreateFavoriteSerializer,
+    CreateFollowSerializer,
     CreateShoppingCartRecipeSerializer,
     FollowSerializer,
     IngredientSerializer,
@@ -277,12 +278,16 @@ class UserViewSet(CreateDestroyListRetrieveModelViewSet):
         current_user = request.user
         author = get_object_or_404(User, id=pk)
         if request.method == 'POST':
-            serializer = FollowSerializer(
-                author, data=request.data, context={'request': request}
+            serializer = CreateFollowSerializer(
+                context={'request': request},
+                data={'user': current_user.id, 'following_author': pk}
             )
             serializer.is_valid(raise_exception=True)
-            Follow(user=current_user, following_author=author).save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            serializer.save()
+            return Response(
+                serializer.to_representation(User.objects.get(id=pk)),
+                status=status.HTTP_201_CREATED
+            )
         try:
             Follow.objects.get(
                 following_author=author, user=current_user
