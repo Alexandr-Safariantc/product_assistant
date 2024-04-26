@@ -48,7 +48,7 @@ class CreateFavoriteSerializer(ToRepresentationSerializer):
 
     def to_representation(self, instance):
         return super().to_representation(
-            instance, FavoriteShoppingCartRecipeSerializer
+            instance.recipe, FavoriteShoppingCartRecipeSerializer
         )
 
 
@@ -67,7 +67,7 @@ class CreateShoppingCartRecipeSerializer(ToRepresentationSerializer):
 
     def to_representation(self, instance):
         return super().to_representation(
-            instance, FavoriteShoppingCartRecipeSerializer
+            instance.recipe, FavoriteShoppingCartRecipeSerializer
         )
 
 
@@ -199,7 +199,10 @@ class CreateFollowSerializer(ToRepresentationSerializer):
         ]
 
     def to_representation(self, instance):
-        return super().to_representation(instance, FollowSerializer)
+        return super().to_representation(
+            instance.following_author,
+            FollowSerializer
+        )
 
 
 class FollowSerializer(UserSerializer):

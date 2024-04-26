@@ -59,8 +59,8 @@ class IngredientViewSet(ListRetrieveModelViewSet):
     """Process get list of Ingredient instances and get one's detail."""
 
     queryset = Ingredient.objects.all()
-    filter_backends = (DjangoFilterBackend,)
-    filterset_class = IngredientFilter
+    filter_backends = (IngredientFilter,)
+    search_fields = ('^name',)
     serializer_class = IngredientSerializer
 
 
@@ -124,10 +124,7 @@ class RecipeViewSet(ModelViewSet):
         model_serializer.is_valid(raise_exception=True)
         model_serializer.save()
         return Response(
-            model_serializer.to_representation(
-                Recipe.objects.get(id=recipe_id)
-            ),
-            status=status.HTTP_201_CREATED
+            model_serializer.data, status=status.HTTP_201_CREATED
         )
 
     def delete_recipe(self, model, current_user, recipe_id):
@@ -284,10 +281,7 @@ class UserViewSet(CreateDestroyListRetrieveModelViewSet):
             )
             serializer.is_valid(raise_exception=True)
             serializer.save()
-            return Response(
-                serializer.to_representation(User.objects.get(id=pk)),
-                status=status.HTTP_201_CREATED
-            )
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         try:
             Follow.objects.get(
                 following_author=author, user=current_user
