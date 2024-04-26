@@ -148,7 +148,7 @@ jobs:
         DJANGO_SUPERUSER_USERNAME: ${{ secrets.DJANGO_SUPERUSER_USERNAME }}
         DJANGO_SUPERUSER_EMAIL: ${{ secrets.DJANGO_SUPERUSER_EMAIL }}
         DJANGO_SUPERUSER_PASSWORD: ${{ secrets.DJANGO_SUPERUSER_PASSWORD }}
-      run: sudo docker compose -f docker-compose.production.yml exec backend python manage.py create_super_user
+      script: sudo docker compose -f docker-compose.production.yml exec backend python manage.py create_super_user
 
   send_message:
     runs-on: ubuntu-latest
