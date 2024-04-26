@@ -7,6 +7,7 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 
 from api.base_serializers import GetBoolFieldsSerializer
+from api.validators import SelfSubscriptionValidator
 from recipes.models import (
     Favorite,
     Ingredient,
@@ -46,13 +47,12 @@ class CreateFavoriteSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         """Define serializer class for response."""
         return FavoriteShoppingCartRecipeSerializer(
-            instance,
-            context={'request': self.context.get('request')}
+            instance, context={'request': self.context.get('request')}
         ).data
 
 
 class CreateShoppingCartRecipeSerializer(serializers.ModelSerializer):
-    """Create and delete Favorite instances."""
+    """Create ShoppingCartRecipe instances."""
 
     class Meta:
         model = ShoppingCartRecipe
@@ -67,13 +67,12 @@ class CreateShoppingCartRecipeSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         """Define serializer class for response."""
         return FavoriteShoppingCartRecipeSerializer(
-            instance,
-            context={'request': self.context.get('request')}
+            instance, context={'request': self.context.get('request')}
         ).data
 
 
 class FavoriteShoppingCartRecipeSerializer(serializers.ModelSerializer):
-    """Create and delete Favorite and ShoppingCartRecipe instances."""
+    """Process get Favorite and ShoppingCartRecipe instances."""
 
     image = Base64ImageField()
 
@@ -183,6 +182,29 @@ class UserSerializer(GetBoolFieldsSerializer):
         )
 
 
+class CreateFollowSerializer(serializers.ModelSerializer):
+    """Create Follow instances."""
+
+    class Meta:
+        model = Follow
+        fields = ('following_author', 'user')
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Follow.objects.all(),
+                fields=('following_author', 'user')
+            ),
+            SelfSubscriptionValidator(
+                fields=('following_author', 'user')
+            )
+        ]
+
+    def to_representation(self, instance):
+        """Define serializer class for response."""
+        return FollowSerializer(
+            instance, context={'request': self.context.get('request')}
+        ).data
+
+
 class FollowSerializer(UserSerializer):
     """Process get, create and delete methods with Follow instances."""
 
@@ -208,20 +230,6 @@ class FollowSerializer(UserSerializer):
             read_only=True
         )
         return serializer.data
-
-    def validate(self, data):
-        """Check field values for duplicate and self subscriptions."""
-        author = self.instance
-        user = self.context.get('request').user
-        if author == user:
-            raise serializers.ValidationError(
-                {'error': settings.SUBSCRIBE_TO_SELF}
-            )
-        if Follow.objects.filter(following_author=author, user=user).exists():
-            raise serializers.ValidationError(
-                {'error': settings.SUBSCRIBE_TWICE_TO_SAME_AUTHOR},
-            )
-        return data
 
 
 class IngredientRecipeReadSerializer(serializers.ModelSerializer):
