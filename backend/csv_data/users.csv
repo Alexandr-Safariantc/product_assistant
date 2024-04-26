@@ -2,3 +2,4 @@ email,first_name,last_name,password,username
 first_test_user@example.com,Джеки,Чан,first_test_user123,Jacky_Ch
 second_test_user@example.com,Майкл,Джексон,second_test_user123,Michael_J
 third_test_user@example.com,Август,Германик,third_test_user123,Kaligula
+forth_test_user@example.com,Анатолий,Дукалис,forth_test_user123,Ducalis_An
