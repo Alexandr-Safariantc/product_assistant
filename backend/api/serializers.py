@@ -6,7 +6,9 @@ from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 
-from api.base_serializers import GetBoolFieldsSerializer
+from api.base_serializers import (
+    GetBoolFieldsSerializer, ToRepresentationSerializer
+)
 from api.validators import SelfSubscriptionValidator
 from recipes.models import (
     Favorite,
@@ -31,7 +33,7 @@ class AuthTokenCreateSerializer(TokenCreateSerializer):
     )
 
 
-class CreateFavoriteSerializer(serializers.ModelSerializer):
+class CreateFavoriteSerializer(ToRepresentationSerializer):
     """Create and delete Favorite instances."""
 
     class Meta:
@@ -45,13 +47,12 @@ class CreateFavoriteSerializer(serializers.ModelSerializer):
         ]
 
     def to_representation(self, instance):
-        """Define serializer class for response."""
-        return FavoriteShoppingCartRecipeSerializer(
-            instance, context={'request': self.context.get('request')}
-        ).data
+        return super().to_representation(
+            instance, FavoriteShoppingCartRecipeSerializer
+        )
 
 
-class CreateShoppingCartRecipeSerializer(serializers.ModelSerializer):
+class CreateShoppingCartRecipeSerializer(ToRepresentationSerializer):
     """Create ShoppingCartRecipe instances."""
 
     class Meta:
@@ -65,10 +66,9 @@ class CreateShoppingCartRecipeSerializer(serializers.ModelSerializer):
         ]
 
     def to_representation(self, instance):
-        """Define serializer class for response."""
-        return FavoriteShoppingCartRecipeSerializer(
-            instance, context={'request': self.context.get('request')}
-        ).data
+        return super().to_representation(
+            instance, FavoriteShoppingCartRecipeSerializer
+        )
 
 
 class FavoriteShoppingCartRecipeSerializer(serializers.ModelSerializer):
@@ -182,7 +182,7 @@ class UserSerializer(GetBoolFieldsSerializer):
         )
 
 
-class CreateFollowSerializer(serializers.ModelSerializer):
+class CreateFollowSerializer(ToRepresentationSerializer):
     """Create Follow instances."""
 
     class Meta:
@@ -199,10 +199,7 @@ class CreateFollowSerializer(serializers.ModelSerializer):
         ]
 
     def to_representation(self, instance):
-        """Define serializer class for response."""
-        return FollowSerializer(
-            instance, context={'request': self.context.get('request')}
-        ).data
+        return super().to_representation(instance, FollowSerializer)
 
 
 class FollowSerializer(UserSerializer):
@@ -292,7 +289,7 @@ class RecipeReadSerializer(GetBoolFieldsSerializer):
         )
 
 
-class RecipeSerializer(serializers.ModelSerializer):
+class RecipeSerializer(ToRepresentationSerializer):
     """Process non-safety methods with Recipe instances except PUT one."""
 
     author = UserSerializer(read_only=True)
@@ -396,8 +393,4 @@ class RecipeSerializer(serializers.ModelSerializer):
         return super().update(instance, validated_data)
 
     def to_representation(self, instance):
-        """Define serializer class for response."""
-        return RecipeReadSerializer(
-            instance,
-            context={'request': self.context.get('request')}
-        ).data
+        return super().to_representation(instance, RecipeReadSerializer)
