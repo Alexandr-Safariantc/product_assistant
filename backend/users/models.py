@@ -38,6 +38,8 @@ class User(AbstractUser):
             check_username_for_me_value, UnicodeUsernameValidator(),
         ]
     )
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username']
 
     class Meta:
         ordering = ('username',)
