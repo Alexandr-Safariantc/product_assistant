@@ -12,7 +12,7 @@
     <img src="https://cdn.pixabay.com/photo/2014/12/21/23/28/recipe-575434_1280.png" height="100" alt="Database" hspace=10>
   </a>
 
-<h3 align="center">Foodgram</h3>
+<h3 align="center">Product assistant</h3>
 
   <p align="center">
     A simple app to find new amaizing recipes
@@ -32,9 +32,9 @@
     <li>
       <a href="#getting-started">Getting Started</a>
       <ul>
-        <li><a href="#Get project">Get project</a></li>
-        <li><a href="#Run as python script">Run as python script</a></li>
-        <li><a href="#Setting up CI/CD pipeline on GitHub Actions">CI/CD pipeline</a></li>
+        <li><a href="#Get-project">Get project</a></li>
+        <li><a href="#Run-as-python-script">Run as python script</a></li>
+        <li><a href="#Setting-up-CICD-pipeline-on-GitHub-Actions">CI/CD pipeline</a></li>
         <li><a href="#Secrets">Secrets</a></li>
       </ul>
     </li>
@@ -61,7 +61,7 @@
 ![](https://img.shields.io/badge/nginx-1.22.1-blue)
 ![](https://img.shields.io/badge/gunicorn-20.1.0-blue)
 
-[![Main Foodgram workflow](https://github.com/Alexandr-Safariantc/foodgram/actions/workflows/main.yml/badge.svg)](https://github.com/Alexandr-Safariantc/foodgram/actions/workflows/main.yml)
+[![Product assistant workflow](https://github.com/Alexandr-Safariantc/product_assistant/actions/workflows/main.yml/badge.svg)](https://github.com/Alexandr-Safariantc/product_assistant/actions/workflows/main.yml)
 
 # Getting Started
 
@@ -81,11 +81,11 @@
 
 1. Clone the repo
    ```sh
-   $ git clone https://github.com/Alexandr-Safariantc/foodgram
+   $ git clone https://github.com/Alexandr-Safariantc/product_assistant
    ```
 2. Activate virtual environment
    ```sh
-   $ cd foodgram
+   $ cd product_assistant
    $ python3 -m venv venv
 * for Linux/macOS
     ```sh
