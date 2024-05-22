@@ -15,7 +15,7 @@
 <h3 align="center">Product assistant</h3>
 
   <p align="center">
-    A simple app to find new amaizing recipes
+    A simple app to find new amazing recipes
     <br />
     <a href="#getting-started"><strong>--> Quick start <--</strong></a>
     <br />
@@ -45,7 +45,7 @@
 </details>
 
 ## Features
-- Addind your fantastic recipes to feed and show them for other users.
+- Adding your fantastic recipes to feed and show them for other users.
 - Editing post with your recipe if you want to make it perfect.
 - Watching other users' recipes and adding them to your favorites.
 - Following to authors which you like and watching their new recipes first.
@@ -96,7 +96,7 @@
     $ source .venv/scripts/activate
     ```
 
-3. Upgrage pip
+3. Upgrade pip
     ```sh
     (venv) $ python3 -m pip install --upgrade pip
     ```
@@ -147,7 +147,7 @@
 
 #### .env secrets
 
-`ALLOWED_HOSTS`: {IP address of server you want to deploy},127.0.0.1,localhost,{your domane name if exists}<br>
+`ALLOWED_HOSTS`: {IP address of server you want to deploy},127.0.0.1,localhost,{your domaine name if exists}<br>
 `DEBUG_VALUE`: if not setted debug mode is off, **not required**<br>
 `DB_HOST`: your PostgreSQL db host name<br>
 `DB_PORT`: your PostgreSQL db port, **not required**<br>
@@ -180,10 +180,10 @@
   Process following to recipe authors.
 
   `Favorite` <br>
-  Proccess adding recipes to favorites, moreover contains created_at.
+  Process adding recipes to favorites, moreover contains created_at.
 
   `ShoppingCartRecipe` <br>
-  Proccess adding recipes to user's shopping cart and download ingredients list for chosen recipes cooking.
+  Process adding recipes to user's shopping cart and download ingredients list for chosen recipes cooking.
 
 ## Restrictions
 
